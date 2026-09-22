@@ -118,7 +118,7 @@ cp rules/lpe_quartet.xml /var/ossec/etc/rules/lpe_quartet.xml
 chown --reference=/var/ossec/etc/rules/local_rules.xml /var/ossec/etc/rules/lpe_quartet.xml
 chmod --reference=/var/ossec/etc/rules/local_rules.xml /var/ossec/etc/rules/lpe_quartet.xml
 
-/var/ossec/bin/wazuh-logtest
+/var/ossec/bin/wazuh-analysisd -t
 systemctl restart wazuh-manager
 ```
 

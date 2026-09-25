@@ -1,4 +1,4 @@
-# LPE Quartet Detection with Wazuh 4.14.7 and 4.14.8
+# LPE Quartet Detection with Wazuh 4.14.7+
 
 > **Detection engineering for four Linux kernel local privilege escalation flaws · DirtyAH6 / TUNderflow / PPPoEject / DiagSpill · Ubuntu 24.04**
 
@@ -12,8 +12,6 @@
 ![cve4](https://img.shields.io/badge/CVE-2026--74469-critical)
 
 ---
-
-![cve4](https://img.shields.io/badge/CVE-2026--74469-critical)
 
 ![LPE Quartet 2026 - Detection with Wazuh](docs/lpe_quartet_infographic.png)
 

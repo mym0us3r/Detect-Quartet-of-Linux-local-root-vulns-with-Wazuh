@@ -1,9 +1,12 @@
-# LPE Quartet Detection with Wazuh 4.14.7+
+# LPE Quartet Detection with Wazuh 4.14.8
 
-> **Detection engineering for four Linux kernel local privilege escalation flaws · DirtyAH6 / TUNderflow / PPPoEject / DiagSpill · Ubuntu 24.04**
+> **Detection engineering for four Linux kernel local privilege escalation flaws:**
 
-![wazuh](https://img.shields.io/badge/wazuh-4.14.7_%7C_4.14.8-blue)
-![rules](https://img.shields.io/badge/wazuh_rules-11-brightgreen)
+· DirtyAH6 / TUNderflow / PPPoEject / DiagSpill - Ubuntu 24.04.5 LTS ·
+
+![wazuh](https://img.shields.io/badge/wazuh-4.14.8-blue)
+![rules](https://img.shields.io/badge/wazuh_rules-17-brightgreen)
+![audit](https://img.shields.io/badge/auditd_rules-17-brightgreen)
 ![sca](https://img.shields.io/badge/SCA_checks-7-brightgreen)
 ![mitre](https://img.shields.io/badge/MITRE-T1068-red)
 ![cve1](https://img.shields.io/badge/CVE-2026--80844-critical)
@@ -16,8 +19,6 @@
 ![LPE Quartet 2026 - Detection with Wazuh](docs/lpe_quartet_infographic.png)
 
 ---
-
-## What is the LPE Quartet?
 
 ## What is the LPE Quartet?
 
@@ -112,19 +113,19 @@ Each PoC fingerprints an exact kernel build. Kernels were selected per test with
 ## Repository Structure
 
 ```
-LPE-Quartet-Detection-with-Wazuh-4.14.7/
-│
-├── rules/
-│   └── lpe_quartet.xml              # 11 Wazuh detection rules
-│
-├── audit_sensor/
-│   └── lpe-quartet-2026.rules       # 17 auditd syscall and watch sensor rules
-│
-├── SCA/
-│   └── lpe_quartet_2026.yml         # Wazuh SCA policy (7 checks)
-│
-├── LICENSE                          # MIT
-└── README.md
+LPE-Quartet-Detection-with-Wazuh-4.14.8/
+|
++-- rules/
+|   +-- lpe_quartet.xml              # 17 Wazuh detection rules
+|
++-- audit_sensor/
+|   +-- lpe-quartet-2026.rules       # 17 auditd syscall and watch sensor rules
+|
++-- SCA/
+|   +-- lpe_quartet_2026.yml         # Wazuh SCA policy (7 checks)
+|
++-- LICENSE                          # MIT
++-- README.md
 ```
 
 ---
@@ -154,27 +155,42 @@ All syscall rules filter on `uid!=0`, covering interactive users, service accoun
  |- 400002  lpe_quartet_rawv6          ---> 400004 (+400001)
  |- 400003  lpe_quartet_xfrm           ---> 400005 (+400001)
  |- 400006  lpe_quartet_tun           -+
- |- 400015  lpe_quartet_netlink_route -+--> 400008 (+400001)
- |- 400011  lpe_quartet_sctp
- |- 400012  lpe_quartet_sockdiag
- |- 400014  lpe_quartet_tmp_exec + public PoC binary name
+ |- 400007  lpe_quartet_netlink_route -+--> 400008 (+400001)
+ |- 400009  lpe_quartet_sctp
+ |- 400010  lpe_quartet_sockdiag
+ |- 400011  lpe_quartet_tmp_exec + public PoC binary name
 ```
 
 `(+400001)` means correlation with the precursor in the same `audit.session`.
 
+#### Detection rules (uid != 0)
+
 | Rule | Level | CVE | Type | Signal | Status |
 |---|---|---|---|---|---|
-| **400001** | 5 | All (except DiagSpill) | Base | Unprivileged user namespace (`lpe_quartet_userns`) | CONFIRMED (4.14.7 and 4.14.8) |
-| **400002** | 8 | DirtyAH6 | Base | Raw IPv6 socket (`lpe_quartet_rawv6`) | CONFIRMED (via 400004) |
-| **400003** | 8 | DirtyAH6 | Base | NETLINK_XFRM socket (`lpe_quartet_xfrm`) | CONFIRMED (via 400005) |
-| **400004** | 14 | DirtyAH6 | Correlation | userns + raw IPv6 socket, same session | CONFIRMED |
-| **400005** | 12 | DirtyAH6 | Correlation | userns + NETLINK_XFRM socket, same session | CONFIRMED |
+| **400001** | 5 | All (except DiagSpill) | Base | Unprivileged user namespace (`lpe_quartet_userns`) | CONFIRMED (4.14.8) |
+| **400002** | 8 | DirtyAH6 | Base | Raw IPv6 socket (`lpe_quartet_rawv6`) | CONFIRMED (via 400004, 4.14.8) |
+| **400003** | 8 | DirtyAH6 | Base | NETLINK_XFRM socket (`lpe_quartet_xfrm`) | CONFIRMED (via 400005, 4.14.8) |
+| **400004** | 14 | DirtyAH6 | Correlation | userns + raw IPv6 socket, same session | CONFIRMED (4.14.8) |
+| **400005** | 12 | DirtyAH6 | Correlation | userns + NETLINK_XFRM socket, same session | CONFIRMED (4.14.8) |
 | **400006** | 5 | TUNderflow | Base | `/dev/net/tun` access (`lpe_quartet_tun`) | CONFIRMED (manual `open()`) |
-| **400015** | 6 | TUNderflow | Base | NETLINK_ROUTE socket (`lpe_quartet_netlink_route`) | FIRED (legitimate tooling only) |
-| **400008** | 14 | TUNderflow | Correlation | userns + (`/dev/net/tun` or NETLINK_ROUTE), same session | CONFIRMED |
-| **400011** | 8 | DiagSpill | Base | SCTP socket (`lpe_quartet_sctp`) | CONFIRMED |
-| **400012** | 6 | DiagSpill | Base | NETLINK_SOCK_DIAG query (`lpe_quartet_sockdiag`) | CONFIRMED |
-| **400014** | 6 | All | IOC | PoC-named binary executed from `/tmp` or `/dev/shm` | CONFIRMED |
+| **400007** | 6 | TUNderflow | Base | NETLINK_ROUTE socket (`lpe_quartet_netlink_route`) | CONFIRMED (4.14.8) |
+| **400008** | 14 | TUNderflow | Correlation | userns + (`/dev/net/tun` or NETLINK_ROUTE), same session | CONFIRMED (4.14.8) |
+| **400009** | 8 | DiagSpill | Base | SCTP socket (`lpe_quartet_sctp`) | CONFIRMED (4.14.8) |
+| **400010** | 6 | DiagSpill | Base | NETLINK_SOCK_DIAG query (`lpe_quartet_sockdiag`) | CONFIRMED (4.14.8) |
+| **400011** | 6 | All | IOC | PoC-named binary executed from `/tmp` or `/dev/shm` | CONFIRMED (4.14.8) |
+
+#### Root-context indicators (uid = 0, level 3 - measurement phase)
+
+These rules fire on the same syscalls observed from a root-context process. They are low-level indicators intended to surface unexpected privileged activity for triage. PoC validation targets unprivileged users by design; these rules were not exercised with PoC runs.
+
+| Rule | CVE | Signal |
+|---|---|---|
+| **400012** | All (except DiagSpill) | Root process: user namespace created |
+| **400013** | DirtyAH6 | Root process: raw IPv6 socket created |
+| **400014** | DirtyAH6 | Root process: NETLINK_XFRM socket created |
+| **400015** | TUNderflow | Root process: NETLINK_ROUTE socket created |
+| **400016** | DiagSpill | Root process: SCTP socket created |
+| **400017** | DiagSpill | Root process: NETLINK_SOCK_DIAG socket created |
 
 Status criterion: **CONFIRMED** only when the rule fired in Wazuh Discover from a real PoC execution (or, where stated, a manual trigger of the same syscall). `wazuh-logtest` results are not counted as validation. Rules without real evidence (PPPoEject-specific socket and correlation, DiagSpill correlation, CLI netkit setup) are not shipped.
 
@@ -303,17 +319,17 @@ done
 
 ## Production Validation Evidence
 
-Lab: Wazuh Server 4.14.7 (initial validation) and Wazuh Server 4.14.8 (current), agent on Ubuntu 24.04.5 LTS. PoCs executed from unprivileged users (`uid!=0`).
+Lab: Wazuh Server 4.14.8, agent on Ubuntu 24.04.5 LTS. All PoCs executed from an unprivileged user (`uid=1004`, no `sudo`, `lxd` or `adm` group membership).
 
 ### DirtyAH6 - CVE-2026-80844 (kernel 6.8.0-134-generic)
 
-Full chain in the same login session (`ses=1`), root obtained:
+Full chain confirmed in the same login session (`ses=2`), root obtained (Sep 26, 2026 @ 21:17:00 UTC-3). The `unshare -Urn` call was denied by AppArmor; the PoC fell back to `aa-exec -p trinity` and then `nsenter`:
 
-| Time (UTC) | Rule | Key | Process |
+| Time (UTC-3) | Rule | Key | Process |
 |---|---|---|---|
-| 17:26:49.598 | 400001 | `lpe_quartet_userns` | `/usr/bin/nsenter` |
-| 17:26:49.607 | 400005 | `lpe_quartet_xfrm` | `esp_receiver` (pid 5447) |
-| 17:26:51.093 | 400004 | `lpe_quartet_rawv6` | `ah6_sender` (pid 5457) |
+| 21:16:49.886 | 400001 | `lpe_quartet_userns` | `/usr/bin/nsenter` |
+| 21:16:49.904 | 400005 | `lpe_quartet_xfrm` | `esp_receiver` (pid 4376) / `/usr/bin/ip` |
+| 21:16:50.665 | 400004 | `lpe_quartet_rawv6` | `ah6_sender` (pid 4413) |
 
 ![DirtyAH6 - exploit chain](docs/dirtyah6_chain.png)
 
@@ -321,11 +337,11 @@ Full chain in the same login session (`ses=1`), root obtained:
 
 ### TUNderflow - CVE-2026-81000 (kernel 6.17.0-40-generic)
 
-Root obtained. Correlation `400001` -> `400008` in the same login session (`ses=1`):
+Root obtained (Sep 26, 2026 @ 20:40:45 UTC-3). `unshare -Urn` was denied by AppArmor; the PoC fell back to `aa-exec -p trinity`. Correlation `400001` -> `400008` confirmed in the same login session (`ses=1`). `400007` (NETLINK_ROUTE base) fired 7 times; `400008` (correlation, level 14) fired 116 times from `/usr/bin/ip` called repeatedly during network device setup:
 
 ![TUNderflow - exploit chain](docs/tunderflow_chain.png)
 
-Rule `400006` validated separately with a manual `open()` on `/dev/net/tun` (`exe=/usr/bin/cat`):
+Rule `400006` validated separately with a manual `open()` on `/dev/net/tun` (`exe=/usr/bin/cat`). The TUNderflow PoC manipulates the device without an observable `open()` on the path, so `400006` is a generic prerequisite indicator rather than a trigger of the script flow:
 
 ![TUNderflow - /dev/net/tun watch](docs/tunderflow_dev_net_tun.png)
 
@@ -333,23 +349,22 @@ Rule `400006` validated separately with a manual `open()` on `/dev/net/tun` (`ex
 
 ### DiagSpill - CVE-2026-74469 (kernel 6.17.0-35-generic)
 
-Executed from a dedicated unprivileged user with no `sudo`, `lxd` or `adm` membership. Rules `400011` (SCTP socket), `400012` (sock_diag query) and `400014` (PoC-named binary in `/tmp`) fired:
+Executed from a dedicated unprivileged user with no `sudo`, `lxd` or `adm` membership. DiagSpill is the only variant that requires no user namespace. Rules `400009` (SCTP socket), `400010` (sock_diag query, 85+ events across processes `diag_wall`, `network_setup` and `diag_fill`) and `400011` (PoC-named binary in `/tmp`) fired. The VM became unresponsive during the `diag_fill` phase, consistent with the ~8 MiB out-of-bounds write completing the Netlink dump:
 
 ![DiagSpill - base rules](docs/diagspill_bases.png)
+
+> **Decoder note**: The PoC binary removes itself from disk at startup (`unlink(argv[0])`). Once removed, the kernel reports the executable path with a ` (deleted)` suffix and auditd records the `exe` field in hexadecimal without quotes. The auditd decoder in Wazuh 4.14.8 (`0040-auditd_decoders.xml`, line 27) requires `exe` in quoted form; events with a hex-encoded `exe` are decoded partially - `audit.command` and `audit.key` are extracted but `uid`, `auid`, `exe`, `pid`, `ppid` and `session` are not indexed as structured fields. The detection rules fire correctly via `audit.key`; the missing fields are available in `full_log`.
 
 ---
 
 ### PPPoEject - CVE-2026-68121 (kernel 6.8.0-136-generic)
 
-The PoC aborts before creating the AF_PPPOX socket. Only the shared precursor `400001` was observed, so PPPoEject is covered by the precursor. Progressing past the PoC's early checks required booting with `nopti` and `nokaslr`, which disable default kernel mitigations; even then it stopped during memory layout preparation.
+Tested with default Ubuntu 24.04.5 kernel security settings (no boot parameter changes). Two barriers prevented the PoC from reaching the AF_PPPOX socket:
 
----
+1. **KPTI active**: the PoC's kernel-text layout helper exited with status 2 (`kernel text is not mapped in the user page table`) before creating the socket.
+2. **AppArmor `unprivileged_userns` profile**: even with KPTI disabled, AppArmor denies `CAP_SYS_ADMIN` (capability 21) to the `unshare` process, as confirmed by a `type=AVC apparmor="DENIED"` record in the lab (`auid=1000`, `uid=1004`, `ses=2`).
 
-### Wazuh Server 4.14.8 - precursor with the final files
-
-After the upgrade to Wazuh Server 4.14.8, rule `400001` was validated end to end with the final rule files. The event was generated by an unprivileged user (`uid=1004`, no administrative groups) with `unshare -U true` and carries the AppArmor `type=AVC` record (`data.audit.type: AVC`):
-
-![Wazuh Server 4.14.8 - rule 400001](docs/userns_400001_4148.png)
+Only the shared precursor `400001` was observed (`exe=/usr/bin/unshare`, `key=lpe_quartet_userns`). PPPoEject is covered by the precursor and by SCA check `400106`. No kernel mitigation was disabled to force progression.
 
 ---
 
@@ -364,30 +379,29 @@ Result on the lab endpoint: 3 passed (`400101`-`400103`), 4 failed (`400104`-`40
 ## Known Limitations
 
 1. **DirtyAH6 fallback path.** The PoC has two code paths. The active exploitation path creates the raw IPv6 socket and fires the full chain. When the PoC reports the target as already patched, it still escalates to root through a fallback path that generated no events on any `lpe_quartet_*` key (same kernel, `lost=0`). `lpe_quartet_rawv6` covers active exploitation only.
-2. **Base rules are noisy by themselves.** `400015` (NETLINK_ROUTE) fires from `/usr/bin/ip`, `apt`, `sudo`, `fwupdmgr` and `systemd-tmpfiles`; `lpe_quartet_xfrm` fires from `ip xfrm`. `400012` also fires from `ss` and routine monitoring tools. Triage on the correlation rules, not on the base rules alone, and apply exceptions to base rules only.
+2. **Base rules are noisy by themselves.** `400007` (NETLINK_ROUTE) fires from `/usr/bin/ip`, `apt`, `sudo`, `fwupdmgr` and `systemd-tmpfiles`; `lpe_quartet_xfrm` fires from `ip xfrm`. `400010` also fires from `ss` and routine monitoring tools. Triage on the correlation rules, not on the base rules alone, and apply exceptions to base rules only.
 3. **Cross-triggering between CVEs.** `400008` (TUNderflow) also fired during a DirtyAH6 run, because that PoC calls `/usr/bin/ip` inside the user namespace, which creates a NETLINK_ROUTE socket in the same session. Treat `400008` as "user namespace + network configuration", not as TUNderflow-specific evidence.
 4. **TUNderflow and `400006`.** The TUNderflow PoC does not produce an observable `open()` on `/dev/net/tun`, so `400006` is a prerequisite indicator, not a trigger of the exploit flow. The detection signal is `400001` -> `400008`.
-5. **PPPoEject coverage.** The PoC did not reach the AF_PPPOX socket on the test kernel, so no PPPoE-specific rule is shipped. PPPoEject is covered by the precursor `400001` and by SCA check `400106`.
-6. **DiagSpill correlation.** A SCTP + sock_diag correlation does not match the real PoC event sequence (one SCTP socket, a burst of sock_diag queries, then another SCTP socket), so it is not shipped. DiagSpill is detected by its base rules `400011` and `400012`.
-7. **`400014` matches `audit.exe`.** For interpreted PoCs (for example `python3 /tmp/<poc>.py`), `audit.exe` is the interpreter and the rule does not match.
+5. **PPPoEject coverage.** The PoC did not reach the AF_PPPOX socket on the test kernel under default Ubuntu 24.04.5 security settings. PPPoEject is covered by the precursor `400001` and by SCA check `400106`.
+6. **DiagSpill correlation.** A SCTP + sock_diag correlation does not match the real PoC event sequence (one SCTP socket, a burst of sock_diag queries, then another SCTP socket), so it is not shipped. DiagSpill is detected by its base rules `400009` and `400010`.
+7. **`400011` matches `audit.exe`.** For interpreted PoCs (for example `python3 /tmp/<poc>.py`), `audit.exe` is the interpreter and the rule does not match. The rule fires for compiled binaries executed directly from `/tmp` or `/dev/shm`.
 8. **Path watches and reboots.** auditd `-w` watches bind to the inode at load time. For device nodes recreated at boot, such as `/dev/net/tun`, run `augenrules --load` after boot and confirm with `auditctl -l` before validating.
-9. **Correlation chains on 4.14.8.** The DirtyAH6 and TUNderflow correlation chains were validated on Wazuh Server 4.14.7. On Wazuh Server 4.14.8, the precursor `400001` was validated with the final files; the full chains were not re-executed.
 
 ---
 
 ## File Integrity (SHA-256)
 
-Hashes of the files deployed in the lab when the final validation was recorded:
-
-| File | SHA-256 |
-|---|---|
-| `rules/lpe_quartet.xml` | `f326368ac6368572c268d12538e7903c642018d745a95ac9236e798cde92101f` |
-| `audit_sensor/lpe-quartet-2026.rules` | `018c9d087140e08a3c6ff8436b1698aaedf1f955f13fcb43be99fbf7d413869a` |
-| `SCA/lpe_quartet_2026.yml` | `244af6ca132231d483df2ca91edbbf827793eeffdf92f02862c83ce27f50126a` |
+Run the command below on the deployed files to verify integrity against the values recorded at release:
 
 ```bash
 sha256sum rules/lpe_quartet.xml audit_sensor/lpe-quartet-2026.rules SCA/lpe_quartet_2026.yml
 ```
+
+| File | SHA-256 |
+|---|---|
+| `rules/lpe_quartet.xml` | `89d60dd74887180c8adea5f6697c913fc4374fe96ef26a5dcf48e452a26cd193` |
+| `audit_sensor/lpe-quartet-2026.rules` | `caabc7c87293b508084c3a8b667c4923a560c71f0cbbe3072ad4623c49bcb832` |
+| `SCA/lpe_quartet_2026.yml` | `244af6ca132231d483df2ca91edbbf827793eeffdf92f02862c83ce27f50126a` |
 
 ---
 
@@ -440,7 +454,7 @@ printf 'install ah6 /bin/false\nblacklist ah6\n' > /etc/modprobe.d/lpe-quartet-a
 | Unprivileged userns required | Yes | Yes | Yes | No |
 | Remote impact | DoS only (IPv6 AH transport-mode gateways) | None | None | DoS only (non-default SCTP options) |
 | Lab result | Root confirmed | Root confirmed | Not reproduced | Reproduced |
-| Primary detection | 400004 / 400005 | 400001 -> 400008 | 400001 (precursor) | 400011 / 400012 |
+| Primary detection | 400004 / 400005 | 400001 -> 400008 | 400001 (precursor) | 400009 / 400010 |
 | SCA prerequisite check | 400104, 400107 | 400104 | 400104, 400106 | 400105 |
 
 ---
@@ -459,7 +473,7 @@ Wazuh Ambassador | Detection Engineering | Blue Team
 
 ---
 
-*Detection rules, auditd sensor configuration and SCA policy validated on Wazuh Server 4.14.7 and Wazuh Server 4.14.8, Ubuntu 24.04.5 LTS (kernels 6.8.0-134-generic, 6.17.0-40-generic, 6.17.0-35-generic and 6.8.0-136-generic).*
+*Detection rules, auditd sensor configuration and SCA policy validated on Wazuh Server 4.14.8, Ubuntu 24.04.5 LTS (kernels 6.8.0-134-generic, 6.17.0-40-generic, 6.17.0-35-generic and 6.8.0-136-generic).*
 
 ---
 

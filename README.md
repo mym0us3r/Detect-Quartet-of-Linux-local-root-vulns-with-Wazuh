@@ -16,7 +16,7 @@
 
 ---
 
-![LPE Quartet 2026 - Detection with Wazuh](docs/lpe_quartet_infographic.png)
+![LPE Quartet 2026 - Detection with Wazuh](docs/lpe_quartet_diagram.png)
 
 ---
 

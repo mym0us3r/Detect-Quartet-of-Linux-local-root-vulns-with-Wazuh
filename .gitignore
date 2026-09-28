@@ -1,0 +1,50 @@
+# --- Editor (vim) ---
+*.swp
+*.swo
+*.swn
+*~
+.*.swp
+.*.swo
+
+# --- OS cruft ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# --- IDE / editors ---
+.vscode/
+.idea/
+*.sublime-*
+
+# --- Secrets and keys (never commit) ---
+client.keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+.env
+.env.*
+
+# --- Wazuh / auditd local artifacts and logs ---
+ossec.log
+*.log
+audit.log
+audit.log.*
+*.audit
+
+# --- Python (helper scripts) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- Packaging / scratch ---
+*.tar.gz
+*.tgz
+*.zip
+*.bak
+*.tmp
+scratch/

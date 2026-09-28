@@ -124,6 +124,8 @@ LPE-Quartet-Detection-with-Wazuh-4.14.8/
 +-- SCA/
 |   +-- lpe_quartet_2026.yml         # Wazuh SCA policy (7 checks)
 |
++-- docs/                            # Evidence screenshots and architecture diagram
+|
 +-- LICENSE                          # MIT
 +-- README.md
 ```
@@ -331,7 +333,11 @@ Full chain confirmed in the same login session (`ses=2`), root obtained (Sep 26,
 | 21:16:49.904 | 400005 | `lpe_quartet_xfrm` | `esp_receiver` (pid 4376) / `/usr/bin/ip` |
 | 21:16:50.665 | 400004 | `lpe_quartet_rawv6` | `ah6_sender` (pid 4413) |
 
-![DirtyAH6 - exploit chain](docs/dirtyah6_chain.png)
+![DirtyAH6 - 400001 precursor: unprivileged user namespace via nsenter fallback (ses=2, level 5)](docs/400001.png)
+
+![DirtyAH6 - 400005 correlation: user namespace + NETLINK_XFRM socket in the same session, esp_receiver (level 12, ses=2)](docs/400005-staging.png)
+
+![DirtyAH6 - 400004 correlation: user namespace + raw IPv6 socket in the same session, ah6_sender (level 14, ses=2)](docs/400004.png)
 
 ---
 
@@ -339,11 +345,15 @@ Full chain confirmed in the same login session (`ses=2`), root obtained (Sep 26,
 
 Root obtained (Sep 26, 2026 @ 20:40:45 UTC-3). `unshare -Urn` was denied by AppArmor; the PoC fell back to `aa-exec -p trinity`. Correlation `400001` -> `400008` confirmed in the same login session (`ses=1`). `400007` (NETLINK_ROUTE base) fired 7 times; `400008` (correlation, level 14) fired 116 times from `/usr/bin/ip` called repeatedly during network device setup:
 
-![TUNderflow - exploit chain](docs/tunderflow_chain.png)
+![TUNderflow - 400001 precursor: unprivileged user namespace (ses=1, level 5)](docs/400001-tunderflow.png)
 
-Rule `400006` validated separately with a manual `open()` on `/dev/net/tun` (`exe=/usr/bin/cat`). The TUNderflow PoC manipulates the device without an observable `open()` on the path, so `400006` is a generic prerequisite indicator rather than a trigger of the script flow:
+![TUNderflow - 400007 base: NETLINK_ROUTE socket, network device programming (level 6)](docs/400007-netlink.png)
 
-![TUNderflow - /dev/net/tun watch](docs/tunderflow_dev_net_tun.png)
+![TUNderflow - 400008 correlation: user namespace + network configuration in the same session (level 14, ses=1)](docs/400008-ses1.png)
+
+Rule `400006` was validated separately with a manual `open()` on `/dev/net/tun` (`exe=/usr/bin/cat`). The TUNderflow PoC manipulates the device without an observable `open()` on the path, so `400006` is a generic prerequisite indicator rather than a trigger of the script flow.
+
+![TUNderflow - 400006: /dev/net/tun watch fired by a manual open() (exe=/usr/bin/cat, uid=1004); the watch also captures legitimate system access (udevadm, uid=0)](docs/400006-tun.png)
 
 ---
 
@@ -351,7 +361,11 @@ Rule `400006` validated separately with a manual `open()` on `/dev/net/tun` (`ex
 
 Executed from a dedicated unprivileged user with no `sudo`, `lxd` or `adm` membership. DiagSpill is the only variant that requires no user namespace. Rules `400009` (SCTP socket), `400010` (sock_diag query, 85+ events across processes `diag_wall`, `network_setup` and `diag_fill`) and `400011` (PoC-named binary in `/tmp`) fired. The VM became unresponsive during the `diag_fill` phase, consistent with the ~8 MiB out-of-bounds write completing the Netlink dump:
 
-![DiagSpill - base rules](docs/diagspill_bases.png)
+![DiagSpill - 400009 base: SCTP socket created, no namespace required (level 8)](docs/400009-diagspill.png)
+
+![DiagSpill - 400010 base: NETLINK_SOCK_DIAG query that may trigger the oversized sctp_diag dump (level 6)](docs/400010-diag_fill.png)
+
+![DiagSpill - 400011 IOC: PoC-named binary executed from /tmp (level 6)](docs/400011-tmp.png)
 
 > **Decoder note**: The PoC binary removes itself from disk at startup (`unlink(argv[0])`). Once removed, the kernel reports the executable path with a ` (deleted)` suffix and auditd records the `exe` field in hexadecimal without quotes. The auditd decoder in Wazuh 4.14.8 (`0040-auditd_decoders.xml`, line 27) requires `exe` in quoted form; events with a hex-encoded `exe` are decoded partially - `audit.command` and `audit.key` are extracted but `uid`, `auid`, `exe`, `pid`, `ppid` and `session` are not indexed as structured fields. The detection rules fire correctly via `audit.key`; the missing fields are available in `full_log`.
 
@@ -366,13 +380,19 @@ Tested with default Ubuntu 24.04.5 kernel security settings (no boot parameter c
 
 Only the shared precursor `400001` was observed (`exe=/usr/bin/unshare`, `key=lpe_quartet_userns`). PPPoEject is covered by the precursor and by SCA check `400106`. No kernel mitigation was disabled to force progression.
 
+![PPPoEject - 400001 precursor: unprivileged user namespace, direct unshare blocked before AF_PPPOX (subj=unprivileged_userns, ses=2, level 5)](docs/400001-pppoeject.png)
+
 ---
 
 ### SCA - LPE Quartet 2026 policy
 
 Result on the lab endpoint: 3 passed (`400101`-`400103`), 4 failed (`400104`-`400107`), 0 not applicable, score 42%. The endpoint has the full detection in place and remains exposed to the four prerequisites, which is the scenario where the detection acts as a compensating control.
 
-![SCA - LPE Quartet 2026 policy](docs/sca_lpe_quartet_2026.png)
+![SCA - LPE Quartet 2026 policy dashboard: 3 passed, 4 failed, score 42%](docs/SCA-1.png)
+
+![SCA - policy summary alongside the CIS Ubuntu 24.04 LTS benchmark](docs/SCA-2.png)
+
+![SCA - individual check results in Wazuh Discover](docs/SCA-3.png)
 
 ---
 

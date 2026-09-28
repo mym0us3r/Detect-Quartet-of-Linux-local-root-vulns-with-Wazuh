@@ -1,4 +1,4 @@
-# LPE Quartet Detection with Wazuh 4.14.8
+# Detect Quartet of Linux Local Root Vulnerabilities with Wazuh 4.14.8 
 
 > **Detection engineering for four Linux kernel local privilege escalation flaws:**
 

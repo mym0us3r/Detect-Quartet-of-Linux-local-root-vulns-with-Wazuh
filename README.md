@@ -321,7 +321,7 @@ done
 
 ## Production Validation Evidence
 
-Lab: Wazuh Server 4.14.8, agent on Ubuntu 24.04.5 LTS. All PoCs executed from an unprivileged user (`uid=1004`, no `sudo`, `lxd` or `adm` group membership).
+Lab: Wazuh Server 4.14.8, agent on Ubuntu 24.04.5 LTS. All PoCs executed from an unprivileged user (`uid=1004`).
 
 ### DirtyAH6 - CVE-2026-80844 (kernel 6.8.0-134-generic)
 
@@ -359,7 +359,7 @@ Rule `400006` was validated separately with a manual `open()` on `/dev/net/tun` 
 
 ### DiagSpill - CVE-2026-74469 (kernel 6.17.0-35-generic)
 
-Executed from a dedicated unprivileged user with no `sudo`, `lxd` or `adm` membership. DiagSpill is the only variant that requires no user namespace. Rules `400009` (SCTP socket), `400010` (sock_diag query, 85+ events across processes `diag_wall`, `network_setup` and `diag_fill`) and `400011` (PoC-named binary in `/tmp`) fired. The VM became unresponsive during the `diag_fill` phase, consistent with the ~8 MiB out-of-bounds write completing the Netlink dump:
+Executed from a dedicated unprivileged user with no `sudo`. DiagSpill is the only variant that requires no user namespace. Rules `400009` (SCTP socket), `400010` (sock_diag query, 85+ events across processes `diag_wall`, `network_setup` and `diag_fill`) and `400011` (PoC-named binary in `/tmp`) fired. The VM became unresponsive during the `diag_fill` phase, consistent with the ~8 MiB out-of-bounds write completing the Netlink dump:
 
 ![DiagSpill - 400009 base: SCTP socket created, no namespace required (level 8)](docs/400009-diagspill.png)
 

@@ -121,7 +121,7 @@ Detect-Quartet-of-Linux-local-root-vulns-with-Wazuh/
 |   +-- lpe_quartet.xml              # 17 Wazuh detection rules
 |
 +-- audit_sensor/
-|   +-- lpe-quartet-2026.rules       # 17 auditd syscall and watch sensor rules
+|   +-- lpe-quartet-2026.rules       # 31 auditd syscall and watch sensor rules
 |
 +-- SCA/
 |   +-- lpe_quartet_2026.yml         # Wazuh SCA policy (7 checks)
@@ -242,7 +242,7 @@ cp audit_sensor/lpe-quartet-2026.rules /etc/audit/rules.d/
 chown root:root /etc/audit/rules.d/lpe-quartet-2026.rules
 chmod 640 /etc/audit/rules.d/lpe-quartet-2026.rules
 augenrules --load
-auditctl -l | grep -c lpe_quartet    # expected: 17
+auditctl -l | grep -c lpe_quartet    # expected: 31
 ```
 
 Every key listed in [Layer 1](#layer-1---auditd-sensor-keys) must appear in `auditctl -l`.

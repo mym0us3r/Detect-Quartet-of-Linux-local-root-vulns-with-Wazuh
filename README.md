@@ -423,7 +423,7 @@ sha256sum rules/lpe_quartet.xml audit_sensor/lpe-quartet-2026.rules SCA/lpe_quar
 |---|---|
 | `rules/lpe_quartet.xml` | `89d60dd74887180c8adea5f6697c913fc4374fe96ef26a5dcf48e452a26cd193` |
 | `audit_sensor/lpe-quartet-2026.rules` | `caabc7c87293b508084c3a8b667c4923a560c71f0cbbe3072ad4623c49bcb832` |
-| `SCA/lpe_quartet_2026.yml` | `244af6ca132231d483df2ca91edbbf827793eeffdf92f02862c83ce27f50126a` |
+| `SCA/lpe_quartet_2026.yml` | `8f2d961538e63f56659f596d86a545060275241774295a8b0876506cba0938ba` |
 
 ---
 

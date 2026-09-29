@@ -101,19 +101,21 @@ The fix is available in the following stable kernels and later:
 
 Each PoC fingerprints an exact kernel build. Kernels were selected per test with `grub-reboot`.
 
-| CVE | Target kernel (Ubuntu 24.04.5 LTS) | Result |
-|---|---|---|
-| DirtyAH6 | 6.8.0-134-generic | ROOT CONFIRMED |
-| TUNderflow | 6.17.0-40-generic | ROOT CONFIRMED |
-| PPPoEject | 6.8.0-136-generic | NOT REPRODUCED |
-| DiagSpill | 6.17.0-35-generic | REPRODUCED |
+| CVE | Target kernel (Ubuntu 24.04.5 LTS) | Result | Root obtained |
+|---|---|---|---|
+| DirtyAH6 | 6.8.0-134-generic | REPRODUCED | Yes |
+| TUNderflow | 6.17.0-40-generic | REPRODUCED | Yes |
+| PPPoEject | 6.8.0-136-generic | PARTIAL (precursor detected) | No |
+| DiagSpill | 6.17.0-35-generic | OOB WRITE TRIGGERED (base rules detected) | No (VM crash) |
+
+Result reflects how far each PoC progressed in the lab and which rules fired at that point. Root acquisition depends on the researcher's exploit and the host's mitigations; detection coverage is the deliverable of this project.
 
 ---
 
 ## Repository Structure
 
 ```
-LPE-Quartet-Detection-with-Wazuh-4.14.8/
+Detect-Quartet-of-Linux-local-root-vulns-with-Wazuh/
 |
 +-- rules/
 |   +-- lpe_quartet.xml              # 17 Wazuh detection rules
@@ -463,6 +465,9 @@ printf 'install ah6 /bin/false\nblacklist ah6\n' > /etc/modprobe.d/lpe-quartet-a
 | Date | Event |
 |---|---|
 | 2026-09-18 | Public disclosure by Asim Manizada, with PoCs for all four vulnerabilities |
+| 2026-09-25 | Project and private repository created |
+| 2026-09-26 | Detection lab completed with Wazuh 4.14.8 - all four variants validated |
+| 2026-09-29 | Artifacts published to the community - detection rules, auditd sensor, SCA policy |
 
 ---
 
@@ -473,7 +478,7 @@ printf 'install ah6 /bin/false\nblacklist ah6\n' > /etc/modprobe.d/lpe-quartet-a
 | Bug class | Out-of-bounds write | Integer underflow | Use-after-free | Integer overflow / heap overflow |
 | Unprivileged userns required | Yes | Yes | Yes | No |
 | Remote impact | DoS only (IPv6 AH transport-mode gateways) | None | None | DoS only (non-default SCTP options) |
-| Lab result | Root confirmed | Root confirmed | Not reproduced | Reproduced |
+| Lab result | Reproduced (root obtained) | Reproduced (root obtained) | Partial (precursor detected) | OOB write triggered (base rules detected) |
 | Primary detection | 400004 / 400005 | 400001 -> 400008 | 400001 (precursor) | 400009 / 400010 |
 | SCA prerequisite check | 400104, 400107 | 400104 | 400104, 400106 | 400105 |
 

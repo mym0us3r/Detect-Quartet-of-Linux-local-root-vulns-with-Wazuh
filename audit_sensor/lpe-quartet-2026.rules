@@ -1,0 +1,58 @@
+## LPE Quartet 2026 - auditd sensor for Wazuh 4.14.8
+## DirtyAH6 (CVE-2026-80844), TUNderflow (CVE-2026-81000),
+## PPPoEject (CVE-2026-68121), DiagSpill (CVE-2026-74469)
+## Author: Kislley Rodrigues
+
+## ---- All non-root users (uid!=0) ----
+
+## Unprivileged user namespace (precursor)
+-a always,exit -F arch=b64 -S unshare,setns -F uid!=0 -F key=lpe_quartet_userns
+-a always,exit -F arch=b32 -S unshare,setns -F uid!=0 -F key=lpe_quartet_userns
+
+## Raw IPv6 socket (DirtyAH6)
+-a always,exit -F arch=b64 -S socket -F a0=0xA -F a1=0x3 -F uid!=0 -F key=lpe_quartet_rawv6
+-a always,exit -F arch=b32 -S socket -F a0=0xA -F a1=0x3 -F uid!=0 -F key=lpe_quartet_rawv6
+-a always,exit -F arch=b64 -S socket -F a0=0xA -F a1=0x80003 -F uid!=0 -F key=lpe_quartet_rawv6
+-a always,exit -F arch=b32 -S socket -F a0=0xA -F a1=0x80003 -F uid!=0 -F key=lpe_quartet_rawv6
+
+## NETLINK_XFRM socket (DirtyAH6)
+-a always,exit -F arch=b64 -S socket -F a0=0x10 -F a2=0x6 -F uid!=0 -F key=lpe_quartet_xfrm
+-a always,exit -F arch=b32 -S socket -F a0=0x10 -F a2=0x6 -F uid!=0 -F key=lpe_quartet_xfrm
+
+## NETLINK_ROUTE socket (TUNderflow)
+-a always,exit -F arch=b64 -S socket -F a0=0x10 -F a2=0x0 -F uid!=0 -F key=lpe_quartet_netlink_route
+-a always,exit -F arch=b32 -S socket -F a0=0x10 -F a2=0x0 -F uid!=0 -F key=lpe_quartet_netlink_route
+
+## SCTP socket (DiagSpill)
+-a always,exit -F arch=b64 -S socket -F a2=0x84 -F uid!=0 -F key=lpe_quartet_sctp
+-a always,exit -F arch=b32 -S socket -F a2=0x84 -F uid!=0 -F key=lpe_quartet_sctp
+
+## NETLINK_SOCK_DIAG socket (DiagSpill)
+-a always,exit -F arch=b64 -S socket -F a0=0x10 -F a2=0x4 -F uid!=0 -F key=lpe_quartet_sockdiag
+-a always,exit -F arch=b32 -S socket -F a0=0x10 -F a2=0x4 -F uid!=0 -F key=lpe_quartet_sockdiag
+
+## ---- Root only (uid=0) ----
+
+-a always,exit -F arch=b64 -S unshare,setns -F uid=0 -F key=lpe_quartet_root_userns
+-a always,exit -F arch=b32 -S unshare,setns -F uid=0 -F key=lpe_quartet_root_userns
+-a always,exit -F arch=b64 -S socket -F a0=0xA -F a1=0x3 -F uid=0 -F key=lpe_quartet_root_rawv6
+-a always,exit -F arch=b32 -S socket -F a0=0xA -F a1=0x3 -F uid=0 -F key=lpe_quartet_root_rawv6
+-a always,exit -F arch=b64 -S socket -F a0=0xA -F a1=0x80003 -F uid=0 -F key=lpe_quartet_root_rawv6
+-a always,exit -F arch=b32 -S socket -F a0=0xA -F a1=0x80003 -F uid=0 -F key=lpe_quartet_root_rawv6
+-a always,exit -F arch=b64 -S socket -F a0=0x10 -F a2=0x6 -F uid=0 -F key=lpe_quartet_root_xfrm
+-a always,exit -F arch=b32 -S socket -F a0=0x10 -F a2=0x6 -F uid=0 -F key=lpe_quartet_root_xfrm
+-a always,exit -F arch=b64 -S socket -F a0=0x10 -F a2=0x0 -F uid=0 -F key=lpe_quartet_root_netlink_route
+-a always,exit -F arch=b32 -S socket -F a0=0x10 -F a2=0x0 -F uid=0 -F key=lpe_quartet_root_netlink_route
+-a always,exit -F arch=b64 -S socket -F a2=0x84 -F uid=0 -F key=lpe_quartet_root_sctp
+-a always,exit -F arch=b32 -S socket -F a2=0x84 -F uid=0 -F key=lpe_quartet_root_sctp
+-a always,exit -F arch=b64 -S socket -F a0=0x10 -F a2=0x4 -F uid=0 -F key=lpe_quartet_root_sockdiag
+-a always,exit -F arch=b32 -S socket -F a0=0x10 -F a2=0x4 -F uid=0 -F key=lpe_quartet_root_sockdiag
+
+## ---- Watches (no uid filter, cover all users including root) ----
+
+## /dev/net/tun access (TUNderflow)
+-w /dev/net/tun -p rwxa -k lpe_quartet_tun
+
+## Execution from world-writable directories (PoC IOC)
+-w /tmp -p x -k lpe_quartet_tmp_exec
+-w /dev/shm -p x -k lpe_quartet_tmp_exec

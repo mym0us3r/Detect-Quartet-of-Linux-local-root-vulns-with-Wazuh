@@ -6,7 +6,7 @@
 
 ![wazuh](https://img.shields.io/badge/wazuh-4.14.8-blue)
 ![rules](https://img.shields.io/badge/wazuh_rules-17-brightgreen)
-![audit](https://img.shields.io/badge/auditd_rules-17-brightgreen)
+![audit](https://img.shields.io/badge/auditd_rules-31-brightgreen)
 ![sca](https://img.shields.io/badge/SCA_checks-7-brightgreen)
 ![mitre](https://img.shields.io/badge/MITRE-T1068-red)
 ![cve1](https://img.shields.io/badge/CVE-2026--80844-critical)
@@ -138,7 +138,7 @@ Detect-Quartet-of-Linux-local-root-vulns-with-Wazuh/
 
 ### Layer 1 - auditd Sensor Keys
 
-All syscall rules filter on `uid!=0`, covering interactive users, service accounts and processes without a login session.
+The sensor has 31 rules: 14 syscall rules for `uid!=0` (the eight detection keys below), 14 syscall rules for `uid=0` (`lpe_quartet_root_*` keys, feeding the root-context indicators `400012`-`400017`) and 3 path watches with no uid filter.
 
 | auditd key | Type | Observes |
 |---|---|---|

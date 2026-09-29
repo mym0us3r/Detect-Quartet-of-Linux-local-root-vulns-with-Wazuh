@@ -37,26 +37,6 @@ Three of the four require only an **unprivileged user namespace**. DiagSpill req
 
 ---
 
-## Official References
-
-| Resource | Link |
-|---|---|
-| Original research - A quartet of Linux local root vulns | https://heyitsas.im/posts/lpe-quartet/ |
-| The Hacker News coverage | https://thehackernews.com/2026/09/public-exploits-released-for-four-linux.html |
-| Red Hat - CVE-2026-74469 | https://access.redhat.com/security/cve/cve-2026-74469 |
-| PoC - DirtyAH6 | https://github.com/manizada/DirtyAH6 |
-| PoC - TUNderflow | https://github.com/manizada/TUNderflow |
-| PoC - PPPoEject | https://github.com/manizada/PPPoEject |
-| PoC - DiagSpill | https://github.com/manizada/DiagSpill |
-| Wazuh - Audit configuration | https://documentation.wazuh.com/current/user-manual/capabilities/system-calls-monitoring/audit-configuration.html |
-| Wazuh - Rules syntax | https://documentation.wazuh.com/current/user-manual/ruleset/ruleset-xml-syntax/rules.html |
-| Wazuh - Creating custom SCA policies | https://documentation.wazuh.com/4.14/user-manual/capabilities/sec-config-assessment/creating-custom-policies.html |
-| Wazuh - How to configure SCA | https://documentation.wazuh.com/4.14/user-manual/capabilities/sec-config-assessment/how-to-configure.html |
-| Wazuh - auditd decoders (v4.14.8) | https://github.com/wazuh/wazuh/blob/v4.14.8/ruleset/decoders/0040-auditd_decoders.xml |
-| MITRE ATT&CK T1068 | https://attack.mitre.org/techniques/T1068/ |
-
----
-
 ## Why This Repo Exists
 
 All four flaws corrupt kernel memory. Nothing is written to disk that file integrity monitoring could compare against a baseline, and the exploitation primitives are ordinary syscalls available to unprivileged users: namespace creation, socket creation with a specific family/protocol, and Netlink queries.
@@ -483,6 +463,23 @@ printf 'install ah6 /bin/false\nblacklist ah6\n' > /etc/modprobe.d/lpe-quartet-a
 | SCA prerequisite check | 400104, 400107 | 400104 | 400104, 400106 | 400105 |
 
 ---
+
+## Official References
+
+| Resource | Link |
+|---|---|
+| Original research - A quartet of Linux local root vulns | https://heyitsas.im/posts/lpe-quartet/ |
+| The Hacker News coverage | https://thehackernews.com/2026/09/public-exploits-released-for-four-linux.html |
+| PoC - DirtyAH6 | https://github.com/manizada/DirtyAH6 |
+| PoC - TUNderflow | https://github.com/manizada/TUNderflow |
+| PoC - PPPoEject | https://github.com/manizada/PPPoEject |
+| PoC - DiagSpill | https://github.com/manizada/DiagSpill |
+| Wazuh - Audit configuration | https://documentation.wazuh.com/current/user-manual/capabilities/system-calls-monitoring/audit-configuration.html |
+| Wazuh - Rules syntax | https://documentation.wazuh.com/current/user-manual/ruleset/ruleset-xml-syntax/rules.html |
+| Wazuh - Creating custom SCA policies | https://documentation.wazuh.com/4.14/user-manual/capabilities/sec-config-assessment/creating-custom-policies.html |
+| Wazuh - How to configure SCA | https://documentation.wazuh.com/4.14/user-manual/capabilities/sec-config-assessment/how-to-configure.html |
+| Wazuh - auditd decoders (v4.14.8) | https://github.com/wazuh/wazuh/blob/v4.14.8/ruleset/decoders/0040-auditd_decoders.xml |
+| MITRE ATT&CK T1068 | https://attack.mitre.org/techniques/T1068/ |
 
 ## Author
 
